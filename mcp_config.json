@@ -1,0 +1,19 @@
+{
+  "mcpServers": {
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"
+      }
+    },
+    "cloud-run": {
+      "command": "gcloud",
+      "args": ["beta", "run", "mcp-server"],
+      "env": {
+        "CLOUDSDK_CORE_PROJECT": "${GCP_PROJECT_ID}",
+        "CLOUDSDK_COMPUTE_REGION": "${GCP_REGION}"
+      }
+    }
+  }
+}

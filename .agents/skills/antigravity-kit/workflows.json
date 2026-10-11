@@ -1,0 +1,112 @@
+{
+  "name": "AntigravityKit",
+  "version": "2.4.0",
+  "total_skills": 68,
+  "total_workflows": 16,
+  "workflows": [
+    {
+      "id": "wf-01-issue-triage",
+      "name": "Automated Issue Triage & Diagnostic",
+      "trigger": "github.issues.opened",
+      "steps": ["classify-intent", "check-duplicates", "run-repro-research", "post-comment"]
+    },
+    {
+      "id": "wf-02-dep-security-patch",
+      "name": "Automated Vulnerability Remediation",
+      "trigger": "schedule.hourly",
+      "steps": ["invoke-dep-scanner", "evaluate-cve-risk", "bump-version", "run-unit-tests", "open-pull-request"]
+    },
+    {
+      "id": "wf-03-cloud-run-deploy",
+      "name": "Zero-Downtime Serverless Cloud Run Rollout",
+      "trigger": "github.release.published",
+      "steps": ["build-container", "request-linkgravity-approval", "deploy-revision", "verify-traffic", "smoke-test-browser"]
+    },
+    {
+      "id": "wf-04-pr-review-gate",
+      "name": "Continuous PR Review & Quality Gate",
+      "trigger": "github.pull_request.opened",
+      "steps": ["static-lint", "ast-research", "test-coverage-check", "post-review-summary"]
+    },
+    {
+      "id": "wf-05-browser-smoke-test",
+      "name": "E2E UI & Staging Smoke Verification",
+      "trigger": "deployment.completed",
+      "steps": ["invoke-browser-subagent", "check-console-errors", "capture-screenshots", "report-status"]
+    },
+    {
+      "id": "wf-06-chatops-approval",
+      "name": "LinkGravity Interactive Human-in-the-Loop Gate",
+      "trigger": "pre-tool-use.destructive",
+      "steps": ["format-approval-card", "dispatch-slack-discord-telegram", "await-reaction-or-callback", "resume-or-abort"]
+    },
+    {
+      "id": "wf-07-vibe-code-scaffold",
+      "name": "Rapid Full-Stack Application Scaffolding",
+      "trigger": "user.prompt.vibe-code",
+      "steps": ["parse-app-spec", "generate-backend-api", "generate-frontend-ui", "configure-db-schema"]
+    },
+    {
+      "id": "wf-08-database-migration",
+      "name": "Safe Database Schema Migration",
+      "trigger": "migration.requested",
+      "steps": ["inspect-schema-diff", "generate-alembic-or-prisma", "test-dry-run", "gate-approval"]
+    },
+    {
+      "id": "wf-09-release-drafter",
+      "name": "Semantic Changelog & Release Drafter",
+      "trigger": "github.push.main",
+      "steps": ["parse-conventional-commits", "group-by-category", "draft-github-release"]
+    },
+    {
+      "id": "wf-10-secret-leak-scanner",
+      "name": "Pre-Commit Secret & Credential Scan",
+      "trigger": "pre-turn.audit",
+      "steps": ["scan-regex-patterns", "redact-keys", "prevent-git-commit"]
+    },
+    {
+      "id": "wf-11-docker-optimizer",
+      "name": "Container Image Multi-Stage Optimization",
+      "trigger": "dockerfile.changed",
+      "steps": ["analyze-layers", "minimize-runtime-deps", "pin-sha256-digests"]
+    },
+    {
+      "id": "wf-12-incident-postmortem",
+      "name": "Automated Outage Diagnostic & Postmortem",
+      "trigger": "webhook.pagerduty.incident",
+      "steps": ["pull-cloud-logging", "extract-stacktrace", "draft-root-cause-analysis"]
+    },
+    {
+      "id": "wf-13-api-contract-audit",
+      "name": "OpenAPI Spec & Contract Sync",
+      "trigger": "routes.changed",
+      "steps": ["extract-fastapi-schema", "diff-with-docs", "update-openapi-spec"]
+    },
+    {
+      "id": "wf-14-dead-code-cleaner",
+      "name": "Unused Import & Dead Symbol Elimination",
+      "trigger": "refactor.requested",
+      "steps": ["run-ast-researcher", "find-zero-ref-symbols", "stage-pr"]
+    },
+    {
+      "id": "wf-15-performance-benchmark",
+      "name": "Micro-benchmark & Latency Profiling",
+      "trigger": "perf.test",
+      "steps": ["warmup-service", "run-load-test", "record-p99-latency"]
+    },
+    {
+      "id": "wf-16-license-compliance-gate",
+      "name": "Open Source License Compatibility Audit",
+      "trigger": "dependencies.updated",
+      "steps": ["inspect-licenses", "verify-mit-apache-bsd", "flag-copyleft-gpl"]
+    }
+  ],
+  "skill_categories": {
+    "core_agentic": 12,
+    "cloud_and_containers": 10,
+    "github_and_vcs": 8,
+    "security_and_compliance": 10,
+    "frontend_and_browser": 12,
+    "database_and_backend": 16
+  }
+}
