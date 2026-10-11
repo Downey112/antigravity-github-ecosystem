@@ -11,9 +11,15 @@ class GitHubClient:
     """Provides direct GitHub API operations alongside the GitHub MCP Server."""
 
     def __init__(self):
-        self.token = settings.GITHUB_TOKEN
-        self.repo = settings.GITHUB_REPOSITORY
         self.base_url = "https://api.github.com"
+
+    @property
+    def token(self) -> str:
+        return settings.GITHUB_TOKEN
+
+    @property
+    def repo(self) -> str:
+        return settings.GITHUB_REPOSITORY
 
     def _headers(self) -> Dict[str, str]:
         headers = {
