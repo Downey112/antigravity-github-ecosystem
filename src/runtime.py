@@ -101,6 +101,10 @@ class AntigravityRuntime:
         try:
             # Check if google-antigravity SDK is importable
             try:
+                import os
+                if not os.getenv("GEMINI_API_KEY"):
+                    raise ImportError("GEMINI_API_KEY not set; falling back to internal orchestrator.")
+                
                 from google.antigravity import Agent, LocalAgentConfig, CapabilitiesConfig
                 
                 # Prepare resolved MCP runtime file
