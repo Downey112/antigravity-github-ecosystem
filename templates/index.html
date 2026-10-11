@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Antigravity Agent Mission Control</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0f9ff',
+              500: '#06b6d4',
+              600: '#0891b2',
+              700: '#0e7490',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+    code, pre, .font-mono { font-family: 'JetBrains Mono', monospace; }
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #0f172a; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #475569; }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-cyan-500 selection:text-black">
+
+  <!-- Top Navigation Bar -->
+  <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-cyan-500/20">
+          <i data-lucide="bot" class="w-6 h-6 text-white"></i>
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <h1 class="font-bold text-lg text-white tracking-tight">Antigravity Mission Control</h1>
+            <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">v1.0.0</span>
+          </div>
+          <p class="text-xs text-slate-400">Autonomous GitHub Maintainer & Agent Runtime</p>
+        </div>
+      </div>
+
+      <div class="flex items-center space-x-3">
+        <div class="flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-slate-800/80 border border-slate-700/60 text-xs">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span class="text-slate-300 font-medium" id="daemon-status-text">Daemon Active</span>
+          <span class="text-slate-500">|</span>
+          <span class="text-slate-400" id="repo-pill">Downey112/antigravity-github-ecosystem</span>
+        </div>
+
+        <button onclick="triggerMaintenance()" class="flex items-center space-x-2 px-3.5 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-medium text-xs shadow-lg shadow-cyan-600/20 transition">
+          <i data-lucide="refresh-cw" class="w-3.5 h-3.5" id="refresh-icon"></i>
+          <span>Trigger Maintenance</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-8">
+
+    <!-- Top Key Metrics -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div class="p-5 rounded-2xl bg-slate-900/60 border border-slate-800 hover:border-slate-700 transition">
+        <div class="flex items-center justify-between text-slate-400 mb-2">
+          <span class="text-xs uppercase font-semibold tracking-wider">Trigger Cadence</span>
+          <i data-lucide="clock" class="w-4 h-4 text-cyan-400"></i>
+        </div>
+        <div class="text-2xl font-bold text-white">every(3600s)</div>
+        <p class="text-xs text-slate-500 mt-1">Scheduled hourly repository sweep</p>
+      </div>
+
+      <div class="p-5 rounded-2xl bg-slate-900/60 border border-slate-800 hover:border-slate-700 transition">
+        <div class="flex items-center justify-between text-slate-400 mb-2">
+          <span class="text-xs uppercase font-semibold tracking-wider">Dependency Health</span>
+          <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i>
+        </div>
+        <div class="text-2xl font-bold text-emerald-400" id="dep-status">Clean (0 CVEs)</div>
+        <p class="text-xs text-slate-500 mt-1" id="dep-packages">11 packages inspected</p>
+      </div>
+
+      <div class="p-5 rounded-2xl bg-slate-900/60 border border-slate-800 hover:border-slate-700 transition">
+        <div class="flex items-center justify-between text-slate-400 mb-2">
+          <span class="text-xs uppercase font-semibold tracking-wider">Open GitHub Issues</span>
+          <i data-lucide="alert-circle" class="w-4 h-4 text-amber-400"></i>
+        </div>
+        <div class="text-2xl font-bold text-white" id="issues-count">1 Issue</div>
+        <p class="text-xs text-slate-500 mt-1" id="issues-triaged">100% Triaged by AI</p>
+      </div>
+
+      <div class="p-5 rounded-2xl bg-slate-900/60 border border-slate-800 hover:border-slate-700 transition">
+        <div class="flex items-center justify-between text-slate-400 mb-2">
+          <span class="text-xs uppercase font-semibold tracking-wider">AntigravityKit</span>
+          <i data-lucide="boxes" class="w-4 h-4 text-indigo-400"></i>
+        </div>
+        <div class="text-2xl font-bold text-white">16 Workflows</div>
+        <p class="text-xs text-slate-500 mt-1">68 specialized agent skills</p>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="flex border-b border-slate-800 space-x-6 text-sm font-medium">
+      <button onclick="switchTab('overview')" id="tab-overview" class="pb-3 border-b-2 border-cyan-500 text-cyan-400 flex items-center space-x-2">
+        <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+        <span>Overview & Subagents</span>
+      </button>
+      <button onclick="switchTab('issues')" id="tab-issues" class="pb-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center space-x-2">
+        <i data-lucide="git-pull-request" class="w-4 h-4"></i>
+        <span>GitHub Triage Feed</span>
+      </button>
+      <button onclick="switchTab('sessions')" id="tab-sessions" class="pb-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center space-x-2">
+        <i data-lucide="history" class="w-4 h-4"></i>
+        <span>Session Transcripts</span>
+      </button>
+      <button onclick="switchTab('workflows')" id="tab-workflows" class="pb-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center space-x-2">
+        <i data-lucide="workflow" class="w-4 h-4"></i>
+        <span>AntigravityKit Catalog</span>
+      </button>
+      <button onclick="switchTab('console')" id="tab-console" class="pb-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center space-x-2">
+        <i data-lucide="terminal" class="w-4 h-4"></i>
+        <span>Interactive Agent Console</span>
+      </button>
+    </div>
+
+    <!-- Tab 1: Overview & Subagents -->
+    <div id="content-overview" class="space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Subagent 1: dep-scanner -->
+        <div class="p-6 rounded-2xl bg-slate-900/60 border border-slate-800 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center space-x-3">
+                <div class="p-2 rounded-xl bg-emerald-500/10 text-emerald-400">
+                  <i data-lucide="shield" class="w-5 h-5"></i>
+                </div>
+                <div>
+                  <h3 class="font-bold text-white">dep-scanner</h3>
+                  <p class="text-xs text-slate-400">Vulnerability & License Auditing</p>
+                </div>
+              </div>
+              <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300">Ready</span>
+            </div>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              Monitors Python <code class="text-cyan-300">requirements.txt</code> and Node <code class="text-cyan-300">package.json</code> for known CVEs, license compatibility, and lockfile updates.
+            </p>
+          </div>
+          <div class="mt-6 pt-4 border-t border-slate-800 flex items-center justify-between">
+            <span class="text-xs text-slate-500">Last scan: Clean</span>
+            <button onclick="runDepScan()" class="text-xs font-semibold text-cyan-400 hover:text-cyan-300 flex items-center space-x-1">
+              <span>Run Audit Now</span>
+              <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Subagent 2: research -->
+        <div class="p-6 rounded-2xl bg-slate-900/60 border border-slate-800 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center space-x-3">
+                <div class="p-2 rounded-xl bg-cyan-500/10 text-cyan-400">
+                  <i data-lucide="file-search" class="w-5 h-5"></i>
+                </div>
+                <div>
+                  <h3 class="font-bold text-white">research</h3>
+                  <p class="text-xs text-slate-400">Codebase AST & Symbol Indexer</p>
+                </div>
+              </div>
+              <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-cyan-500/20 text-cyan-300">Active</span>
+            </div>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              Inspects repository structure, parses Abstract Syntax Trees (AST), finds symbol references across files, and synthesizes documentation without polluting context.
+            </p>
+          </div>
+          <div class="mt-6 pt-4 border-t border-slate-800 flex items-center justify-between">
+            <span class="text-xs text-slate-500">AST parser: Python, JS, TS</span>
+            <span class="text-xs font-mono text-slate-400">Indexed</span>
+          </div>
+        </div>
+
+        <!-- Subagent 3: browser -->
+        <div class="p-6 rounded-2xl bg-slate-900/60 border border-slate-800 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center space-x-3">
+                <div class="p-2 rounded-xl bg-purple-500/10 text-purple-400">
+                  <i data-lucide="globe" class="w-5 h-5"></i>
+                </div>
+                <div>
+                  <h3 class="font-bold text-white">browser</h3>
+                  <p class="text-xs text-slate-400">UI & Playwright Smoke Verification</p>
+                </div>
+              </div>
+              <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-500/20 text-purple-300">Headless</span>
+            </div>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              Navigates live web endpoints, validates HTTP response codes, captures page screenshots, and catches frontend JavaScript console exceptions.
+            </p>
+          </div>
+          <div class="mt-6 pt-4 border-t border-slate-800 flex items-center justify-between">
+            <span class="text-xs text-slate-500">HTTP / Headless Mode</span>
+            <button onclick="runBrowserCheck()" class="text-xs font-semibold text-purple-400 hover:text-purple-300 flex items-center space-x-1">
+              <span>Smoke Test</span>
+              <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Quick Result Card -->
+      <div id="quick-result-card" class="hidden p-6 rounded-2xl bg-slate-900/90 border border-cyan-500/30">
+        <div class="flex items-center justify-between mb-3">
+          <h4 class="font-bold text-sm text-cyan-400 flex items-center space-x-2">
+            <i data-lucide="terminal" class="w-4 h-4"></i>
+            <span id="result-title">Subagent Execution Result</span>
+          </h4>
+          <button onclick="document.getElementById('quick-result-card').classList.add('hidden')" class="text-slate-500 hover:text-slate-300">
+            <i data-lucide="x" class="w-4 h-4"></i>
+          </button>
+        </div>
+        <pre id="result-output" class="text-xs font-mono bg-slate-950 p-4 rounded-xl text-slate-300 overflow-x-auto max-h-64"></pre>
+      </div>
+    </div>
+
+    <!-- Tab 2: GitHub Triage Feed -->
+    <div id="content-issues" class="hidden space-y-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="font-bold text-lg text-white">GitHub Triage & Autonomous Activity</h2>
+          <p class="text-xs text-slate-400">Live issues and PR triage comments posted by the agent</p>
+        </div>
+        <a href="https://github.com/Downey112/antigravity-github-ecosystem/issues" target="_blank" class="text-xs text-cyan-400 hover:underline flex items-center space-x-1">
+          <span>View on GitHub</span>
+          <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+        </a>
+      </div>
+
+      <div id="issues-list" class="space-y-4">
+        <div class="p-5 rounded-2xl bg-slate-900/60 border border-slate-800 animate-pulse text-slate-500 text-xs">
+          Loading live GitHub issues...
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 3: Session Transcripts -->
+    <div id="content-sessions" class="hidden space-y-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="font-bold text-lg text-white">Persisted Agent Sessions</h2>
+          <p class="text-xs text-slate-400">State checkpoints and execution histories stored in <code class="text-cyan-400">data/sessions/</code></p>
+        </div>
+        <button onclick="loadSessions()" class="text-xs text-cyan-400 hover:underline flex items-center space-x-1">
+          <i data-lucide="refresh-cw" class="w-3 h-3"></i>
+          <span>Reload</span>
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="md:col-span-1 space-y-2" id="sessions-list">
+          <!-- Session items -->
+        </div>
+        <div class="md:col-span-2 p-5 rounded-2xl bg-slate-900/60 border border-slate-800 flex flex-col">
+          <h4 class="font-bold text-xs uppercase tracking-wider text-slate-400 mb-3" id="selected-session-name">Select a session to inspect transcript</h4>
+          <div id="transcript-viewer" class="flex-1 bg-slate-950 p-4 rounded-xl font-mono text-xs text-slate-300 overflow-y-auto max-h-96 space-y-3">
+            <span class="text-slate-600">No session selected.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 4: AntigravityKit Workflows -->
+    <div id="content-workflows" class="hidden space-y-4">
+      <div>
+        <h2 class="font-bold text-lg text-white">AntigravityKit Catalog (16 Workflows)</h2>
+        <p class="text-xs text-slate-400">Pre-packaged agentic automation runbooks across security, deployment, and development</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="workflows-grid">
+        <!-- Workflows populated by JS -->
+      </div>
+    </div>
+
+    <!-- Tab 5: Interactive Agent Console -->
+    <div id="content-console" class="hidden space-y-4">
+      <div>
+        <h2 class="font-bold text-lg text-white">Interactive Agent Console</h2>
+        <p class="text-xs text-slate-400">Issue ad-hoc prompts directly to the Antigravity runtime</p>
+      </div>
+
+      <div class="p-6 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-4">
+        <div class="flex space-x-2">
+          <input type="text" id="console-prompt" placeholder="e.g. Audit all dependencies, or check open GitHub issues..." 
+                 class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition">
+          <button onclick="sendAgentPrompt()" id="console-send-btn" class="px-5 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-medium text-sm transition flex items-center space-x-2">
+            <i data-lucide="send" class="w-4 h-4"></i>
+            <span>Execute</span>
+          </button>
+        </div>
+
+        <div>
+          <h4 class="text-xs uppercase font-semibold text-slate-400 mb-2">Agent Execution Log & Thinking</h4>
+          <pre id="console-output" class="bg-slate-950 p-4 rounded-xl font-mono text-xs text-cyan-300 min-h-[160px] max-h-96 overflow-y-auto whitespace-pre-wrap">Awaiting prompt input...</pre>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    // Tab switching logic
+    function switchTab(tabId) {
+      const tabs = ['overview', 'issues', 'sessions', 'workflows', 'console'];
+      tabs.forEach(t => {
+        const btn = document.getElementById('tab-' + t);
+        const content = document.getElementById('content-' + t);
+        if (t === tabId) {
+          btn.className = 'pb-3 border-b-2 border-cyan-500 text-cyan-400 flex items-center space-x-2';
+          content.classList.remove('hidden');
+        } else {
+          btn.className = 'pb-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center space-x-2';
+          content.classList.add('hidden');
+        }
+      });
+      if (tabId === 'issues') loadIssues();
+      if (tabId === 'sessions') loadSessions();
+      if (tabId === 'workflows') loadWorkflows();
+    }
+
+    // Trigger maintenance
+    async function triggerMaintenance() {
+      const icon = document.getElementById('refresh-icon');
+      icon.classList.add('animate-spin');
+      try {
+        const res = await fetch('/triggers/maintenance', { method: 'POST' });
+        const data = await res.json();
+        showResult('Maintenance Triggered', JSON.stringify(data, null, 2));
+      } catch (e) {
+        showResult('Error', e.message);
+      } finally {
+        setTimeout(() => icon.classList.remove('animate-spin'), 1000);
+      }
+    }
+
+    // Run dependency scan
+    async function runDepScan() {
+      showResult('Running dep-scanner...', 'Analyzing requirements.txt and package.json...');
+      try {
+        const res = await fetch('/api/trigger/dep-scan', { method: 'POST' });
+        const data = await res.json();
+        showResult('dep-scanner Audit Report', JSON.stringify(data, null, 2));
+      } catch (e) {
+        showResult('Error', e.message);
+      }
+    }
+
+    // Run browser check
+    async function runBrowserCheck() {
+      const url = prompt('Enter target URL to verify:', 'https://httpbin.org/status/200');
+      if (!url) return;
+      showResult('Running browser subagent...', 'Connecting to ' + url + '...');
+      try {
+        const res = await fetch('/api/trigger/browser-check', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url: url })
+        });
+        const data = await res.json();
+        showResult('Browser Verification Report', JSON.stringify(data, null, 2));
+      } catch (e) {
+        showResult('Error', e.message);
+      }
+    }
+
+    // Show output card
+    function showResult(title, text) {
+      const card = document.getElementById('quick-result-card');
+      const titleEl = document.getElementById('result-title');
+      const outEl = document.getElementById('result-output');
+      titleEl.innerText = title;
+      outEl.innerText = text;
+      card.classList.remove('hidden');
+      card.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Load GitHub Issues
+    async function loadIssues() {
+      const list = document.getElementById('issues-list');
+      try {
+        const res = await fetch('/api/issues');
+        const data = await res.json();
+        if (!data || data.length === 0) {
+          list.innerHTML = '<div class="p-6 rounded-2xl bg-slate-900/60 border border-slate-800 text-slate-500 text-sm">No open issues found.</div>';
+          return;
+        }
+        list.innerHTML = data.map(issue => `
+          <div class="p-6 rounded-2xl bg-slate-900/60 border border-slate-800 hover:border-slate-700 transition space-y-3">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center space-x-3">
+                <span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Open #${issue.number}</span>
+                <h3 class="font-bold text-white text-base">${issue.title}</h3>
+              </div>
+              <span class="text-xs text-slate-500">Author: ${issue.user?.login || 'user'}</span>
+            </div>
+            <p class="text-xs text-slate-300">${issue.body || 'No description provided.'}</p>
+            ${issue.comments_content && issue.comments_content.length > 0 ? `
+              <div class="mt-4 pt-3 border-t border-slate-800/80 bg-slate-950/60 p-4 rounded-xl space-y-2">
+                <span class="text-xs font-semibold text-cyan-400 flex items-center space-x-1">
+                  <i data-lucide="bot" class="w-3.5 h-3.5"></i>
+                  <span>Latest Autonomous Triage Diagnostic</span>
+                </span>
+                <pre class="text-xs font-mono text-slate-300 whitespace-pre-wrap">${issue.comments_content[0].body}</pre>
+              </div>
+            ` : ''}
+          </div>
+        `).join('');
+        lucide.createIcons();
+      } catch (e) {
+        list.innerHTML = `<div class="p-4 text-red-400 text-xs">Failed to load issues: ${e.message}</div>`;
+      }
+    }
+
+    // Load Sessions
+    async function loadSessions() {
+      const list = document.getElementById('sessions-list');
+      try {
+        const res = await fetch('/sessions');
+        const data = await res.json();
+        const sessions = data.active_sessions || [];
+        if (sessions.length === 0) {
+          list.innerHTML = '<span class="text-slate-500 text-xs">No active sessions.</span>';
+          return;
+        }
+        list.innerHTML = sessions.map(s => `
+          <button onclick="inspectSession('${s}')" class="w-full text-left p-3 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-slate-800 transition text-xs font-mono text-cyan-300 truncate">
+            ${s}
+          </button>
+        `).join('');
+      } catch (e) {
+        list.innerHTML = `<span class="text-red-400 text-xs">Error: ${e.message}</span>`;
+      }
+    }
+
+    // Inspect Session
+    async function inspectSession(sessionId) {
+      document.getElementById('selected-session-name').innerText = 'Session: ' + sessionId;
+      const viewer = document.getElementById('transcript-viewer');
+      viewer.innerText = 'Loading transcript...';
+      try {
+        const res = await fetch('/api/sessions/' + sessionId);
+        const data = await res.json();
+        viewer.innerHTML = data.transcript.map(line => `
+          <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-800/60">
+            <div class="flex items-center justify-between text-[11px] text-slate-500 mb-1">
+              <span class="font-bold text-cyan-400">${line.type}</span>
+              <span>${line.timestamp || ''}</span>
+            </div>
+            <div class="text-slate-200">${line.content || JSON.stringify(line)}</div>
+          </div>
+        `).join('');
+      } catch (e) {
+        viewer.innerText = 'Failed to load transcript: ' + e.message;
+      }
+    }
+
+    // Load Workflows
+    async function loadWorkflows() {
+      const grid = document.getElementById('workflows-grid');
+      try {
+        const res = await fetch('/api/workflows');
+        const data = await res.json();
+        grid.innerHTML = (data.workflows || []).map(wf => `
+          <div class="p-5 rounded-2xl bg-slate-900/60 border border-slate-800 hover:border-slate-700 transition flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <span class="font-mono text-xs text-cyan-400 font-semibold">${wf.id}</span>
+                <span class="text-[11px] px-2 py-0.5 rounded bg-slate-800 text-slate-400 font-mono">${wf.trigger}</span>
+              </div>
+              <h4 class="font-bold text-sm text-white mb-2">${wf.name}</h4>
+              <div class="flex flex-wrap gap-1 mt-3">
+                ${wf.steps.map(step => `<span class="px-2 py-0.5 rounded bg-slate-950 text-[10px] text-slate-400 border border-slate-800">${step}</span>`).join('')}
+              </div>
+            </div>
+            <button onclick="executeWorkflow('${wf.id}')" class="mt-4 pt-3 border-t border-slate-800 w-full text-xs font-semibold text-cyan-400 hover:text-cyan-300 flex items-center justify-between">
+              <span>Execute Workflow</span>
+              <i data-lucide="play" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+        `).join('');
+        lucide.createIcons();
+      } catch (e) {
+        grid.innerHTML = `<span class="text-red-400 text-xs">Failed to load workflows: ${e.message}</span>`;
+      }
+    }
+
+    // Execute Workflow
+    async function executeWorkflow(wfId) {
+      showResult('Executing Workflow: ' + wfId, 'Dispatching workflow to Antigravity runtime...');
+      try {
+        const res = await fetch('/api/agent/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt: 'Run workflow ' + wfId })
+        });
+        const data = await res.json();
+        showResult('Workflow Completed: ' + wfId, data.response);
+      } catch (e) {
+        showResult('Error', e.message);
+      }
+    }
+
+    // Send Agent Prompt from Console
+    async function sendAgentPrompt() {
+      const input = document.getElementById('console-prompt');
+      const out = document.getElementById('console-output');
+      const btn = document.getElementById('console-send-btn');
+      const prompt = input.value.trim();
+      if (!prompt) return;
+
+      btn.disabled = true;
+      out.innerText = '[Agent Thinking & Executing] Running prompt: ' + prompt + '...\n';
+
+      try {
+        const res = await fetch('/api/agent/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt: prompt })
+        });
+        const data = await res.json();
+        out.innerText = data.response;
+      } catch (e) {
+        out.innerText = 'Error: ' + e.message;
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    // Init icons
+    document.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+    });
+  </script>
+</body>
+</html>
