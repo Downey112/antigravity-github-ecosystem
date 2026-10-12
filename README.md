@@ -87,6 +87,7 @@ antigravity-github-ecosystem/
 └── .github/
     └── workflows/
         ├── agent-ci.yml                   # Event-driven: GitHub Issues & PRs
+        ├── daily-checkup.yml              # Scheduled daily checkup across all repositories
         └── hourly-cron.yml                # Scheduled hourly trigger: every 3600s
 ```
 
@@ -120,6 +121,10 @@ Key environment variables:
   ```bash
   python main.py --cron
   ```
+- **Daily Portfolio Checkup** (add `--dry-run` to print the report without publishing it):
+  ```bash
+  python main.py --checkup
+  ```
 - **Simulate GitHub Event**:
   ```bash
   python main.py --event issues --action opened
@@ -152,6 +157,7 @@ gcloud run deploy antigravity-agent-daemon \
 ### GitHub Actions Automation
 - `.github/workflows/agent-ci.yml` triggers automatically whenever issues or PRs are opened.
 - `.github/workflows/hourly-cron.yml` executes the hourly maintenance loop at `0 * * * *`.
+- `.github/workflows/daily-checkup.yml` checks every repository the account owns at `5 0 * * *` (workflow results, open issues and PRs, live sites, licenses) and keeps the result in a single **Daily Portfolio Checkup** issue.
 
 ---
 

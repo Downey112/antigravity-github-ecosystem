@@ -24,6 +24,8 @@ class Settings:
     GITHUB_TOKEN: str = os.getenv("GITHUB_TOKEN", "")
     GITHUB_REPOSITORY: str = os.getenv("GITHUB_REPOSITORY", "")
     GITHUB_WEBHOOK_SECRET: str = os.getenv("GITHUB_WEBHOOK_SECRET", "")
+    # Account whose repositories the daily checkup covers (defaults to the repository owner)
+    PORTFOLIO_OWNER: str = os.getenv("PORTFOLIO_OWNER", "")
 
     # Google Cloud Run
     GCP_PROJECT_ID: str = os.getenv("GCP_PROJECT_ID", "")
