@@ -1,0 +1,36 @@
+name: Antigravity Daily Portfolio Checkup
+
+on:
+  schedule:
+    # 00:05 UTC every day (08:05 Malaysia time)
+    - cron: '5 0 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  daily-checkup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run Daily Portfolio Checkup
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          LINKGRAVITY_WEBHOOK_URL: ${{ secrets.LINKGRAVITY_WEBHOOK_URL }}
+        run: |
+          python main.py --checkup

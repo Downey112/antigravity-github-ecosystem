@@ -60,6 +60,63 @@ class GitHubClient:
             logger.error(f"Error posting comment to issue #{issue_number}: {e}")
             return False
 
+    async def upsert_issue_comment(self, issue_number: int, marker: str, comment: str) -> bool:
+        """Updates the comment carrying `marker` on an issue, or posts it if absent.
+
+        Keeps recurring reports to a single comment instead of one per run.
+        """
+        if not self.repo or not self.token:
+            return False
+
+        body = f"{marker}\n{comment}"
+        existing = await self.get_json(
+            f"/repos/{self.repo}/issues/{issue_number}/comments", params={"per_page": 100}
+        )
+        target = next((c for c in existing or [] if marker in (c.get("body") or "")), None)
+        if target is None:
+            return await self.create_issue_comment(issue_number, body)
+
+        url = f"{self.base_url}/repos/{self.repo}/issues/comments/{target['id']}"
+        try:
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                res = await client.patch(url, headers=self._headers(), json={"body": body})
+                return res.status_code == 200
+        except Exception as e:
+            logger.error(f"Error updating comment on issue #{issue_number}: {e}")
+            return False
+
+    async def upsert_issue(self, title: str, body: str) -> Optional[int]:
+        """Rewrites the open issue named `title`, or opens it. Returns the issue number."""
+        if not self.repo or not self.token:
+            return None
+
+        target = next((i for i in await self.list_open_issues() if i.get("title") == title), None)
+        try:
+            async with httpx.AsyncClient(timeout=15.0) as client:
+                if target is None:
+                    url = f"{self.base_url}/repos/{self.repo}/issues"
+                    res = await client.post(url, headers=self._headers(), json={"title": title, "body": body})
+                else:
+                    url = f"{self.base_url}/repos/{self.repo}/issues/{target['number']}"
+                    res = await client.patch(url, headers=self._headers(), json={"body": body})
+                if res.status_code in (200, 201):
+                    return res.json().get("number")
+        except Exception as e:
+            logger.error(f"Error writing issue '{title}': {e}")
+        return None
+
+    async def get_json(self, path: str, params: Optional[Dict[str, Any]] = None) -> Any:
+        """GETs any GitHub API path, including other repositories. Returns None on failure."""
+        try:
+            async with httpx.AsyncClient(timeout=15.0) as client:
+                res = await client.get(f"{self.base_url}{path}", headers=self._headers(), params=params)
+                if res.status_code == 200:
+                    return res.json()
+                logger.warning(f"GitHub API {path} returned {res.status_code}")
+        except Exception as e:
+            logger.error(f"Error fetching {path}: {e}")
+        return None
+
     async def create_pull_request(self, title: str, body: str, head_branch: str, base_branch: str = "main") -> Optional[Dict[str, Any]]:
         """Opens a Pull Request for automated fixes or dependency updates."""
         if not self.repo or not self.token:

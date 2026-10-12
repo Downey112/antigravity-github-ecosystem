@@ -9,6 +9,8 @@ Implements the central execution loop with:
 
 import asyncio
 import logging
+import re
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, AsyncGenerator, Dict, Optional
 
@@ -20,8 +22,12 @@ from src.integrations.mcp_manager import mcp_manager
 from src.subagents.dep_scanner import DependencyScannerSubagent
 from src.subagents.researcher import ResearchSubagent
 from src.subagents.browser_verifier import BrowserVerificationSubagent
+from src.subagents.portfolio_checkup import CHECKUP_ISSUE_TITLE
 
 logger = logging.getLogger("AntigravityRuntime")
+
+# Hidden marker that lets each run find and rewrite its own triage comment
+TRIAGE_COMMENT_MARKER = "<!-- antigravity-triage -->"
 
 class AntigravityRuntime:
     """Manages agent execution, hook dispatching, and session persistence."""
@@ -142,26 +148,37 @@ class AntigravityRuntime:
                 if "issue" in processed_prompt.lower():
                     from src.integrations.github_client import github_client
                     issues = await github_client.list_open_issues()
-                    if issues:
-                        target_issue = issues[0]
+                    # Only issues that ask for a dependency audit get the dep-scanner report
+                    audit_requests = [
+                        i for i in issues
+                        if "pull_request" not in i
+                        and i.get("title") != CHECKUP_ISSUE_TITLE
+                        and re.search(
+                            r"depend|audit|licen|cve|vulnerab",
+                            f"{i.get('title', '')} {i.get('body') or ''}",
+                            re.IGNORECASE,
+                        )
+                    ]
+                    if audit_requests:
+                        audit = self.dep_scanner.run_full_scan()
+                        findings = "\n".join(self.dep_scanner.summarize(audit))
+                        last_run = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+
+                    for target_issue in audit_requests[:5]:
                         issue_num = target_issue.get("number")
                         issue_title = target_issue.get("title")
-                        audit = self.dep_scanner.run_full_scan()
-                        
+
                         comment = (
                             f"### 🤖 Antigravity Autonomous Agent Triage Report\n\n"
                             f"**Trigger**: Scheduled / Event-driven autonomous maintainer loop\n"
-                            f"**Target Issue**: #{issue_num} — *{issue_title}*\n\n"
+                            f"**Target Issue**: #{issue_num} — *{issue_title}*\n"
+                            f"**Last run**: {last_run}\n\n"
                             f"#### 🔍 Subagent Execution: `dep-scanner`\n"
-                            f"- **Status**: ✅ Completed\n"
-                            f"- **Packages Scanned**: `{audit['python'].get('packages_found', 0)}`\n"
-                            f"- **Vulnerabilities**: `0 critical / high CVEs detected`\n"
-                            f"- **Compliance**: MIT / Apache-2.0 clean\n\n"
+                            f"{findings}\n\n"
                             f"> [!NOTE]\n"
-                            f"> Verified by Antigravity Core Agent Runtime v1.0.0. "
-                            f"All requirements are up to date and verified against live manifests."
+                            f"> This comment is rewritten on every run and reports only what the scanner checked."
                         )
-                        posted = await github_client.create_issue_comment(issue_num, comment)
+                        posted = await github_client.upsert_issue_comment(issue_num, TRIAGE_COMMENT_MARKER, comment)
                         if posted:
                             output_tokens.append(f"[github-client]: Successfully posted triage diagnostic to Issue #{issue_num}.\n")
                         else:
