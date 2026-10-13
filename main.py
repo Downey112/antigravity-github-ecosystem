@@ -13,6 +13,10 @@ from src.runtime import AntigravityRuntime
 from src.scheduler import scheduler
 from src.subagents.portfolio_checkup import CHECKUP_ISSUE_TITLE, PortfolioCheckupSubagent
 
+if sys.platform == "win32":
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
 logger = logging.getLogger("AntigravityCLI")
 
